@@ -1,0 +1,10 @@
+{
+  "Osaka": [
+    { "name": "吹田市", "url": "suita.html" },
+    { "name": "豊中市", "url": "toyonaka.html" }
+  ],
+  "Kyoto": [
+    { "name": "京都市", "url": "kyoto.html" }
+  ]
+}
+
