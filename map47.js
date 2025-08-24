@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const popup = document.getElementById("popup");
   const originalOrder = Array.from(svgElement.children);
 
-  let popupX = 0, popupY = 0;
+  let lastX = 0, lastY = 0;
   let activeAnchor = null;
   let cityData = {};
   let isHoveringPopup = false;
@@ -21,8 +21,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function updatePopupPosition() {
     if (popup.style.display === "block") {
-      popup.style.left = `${popupX}px`;
-      popup.style.top = `${popupY - 60}px`;
+      popup.style.left = `${lastX}px`;
+      popup.style.top = `${lastY - 60}px`; // 都道府県の外枠付近に表示
     }
     requestAnimationFrame(updatePopupPosition);
   }
@@ -74,10 +74,11 @@ document.addEventListener("DOMContentLoaded", function () {
         group.classList.remove("hovering");
       }
 
-      group.addEventListener("mouseover", function (e) {
-        if (activeAnchor === anchor) return;
-
+      group.addEventListener("mouseenter", function (e) {
         isHoveringAnchor = true;
+
+        // 同じ都道府県なら再描画しない
+        if (activeAnchor === anchor && popup.style.display === "block") return;
 
         // 前の都道府県の拡大解除
         if (activeAnchor && activeAnchor !== anchor) {
@@ -86,9 +87,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         activeAnchor = anchor;
-
-        popupX = e.pageX;
-        popupY = e.pageY;
+        lastX = e.pageX;
+        lastY = e.pageY;
 
         svgElement.appendChild(anchor);
         applyHoverEffect();
