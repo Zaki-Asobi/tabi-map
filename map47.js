@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let lastX = 0, lastY = 0;
   let activeAnchor = null;
   let cityData = {};
+  let isHoveringPopup = false;
 
   fetch("cities.json")
     .then(response => response.json())
@@ -26,6 +27,23 @@ document.addEventListener("DOMContentLoaded", function () {
     requestAnimationFrame(updatePopup);
   }
   updatePopup();
+
+  // ✅ ポップアップ上にカーソルがあるかを判定
+  popup.addEventListener("mouseenter", () => {
+    isHoveringPopup = true;
+  });
+
+  popup.addEventListener("mouseleave", () => {
+    isHoveringPopup = false;
+    hidePopupIfNecessary();
+  });
+
+  function hidePopupIfNecessary() {
+    if (!isHoveringPopup && !activeAnchor?.matches(":hover")) {
+      popup.style.display = "none";
+      activeAnchor = null;
+    }
+  }
 
   function initializeMap() {
     svgElement.querySelectorAll("a").forEach(function (anchor) {
@@ -73,22 +91,18 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       group.addEventListener("mouseleave", function () {
-        // ポップアップがマウス上にある場合は消さない
         setTimeout(() => {
-          if (!popup.matches(":hover")) {
-            popup.style.display = "none";
-            activeAnchor = null;
-            removeHoverEffect();
+          hidePopupIfNecessary();
+          removeHoverEffect();
 
-            const originalIndex = originalOrder.indexOf(anchor);
-            svgElement.removeChild(anchor);
-            if (originalIndex >= 0 && originalIndex < svgElement.children.length) {
-              svgElement.insertBefore(anchor, svgElement.children[originalIndex]);
-            } else {
-              svgElement.appendChild(anchor);
-            }
+          const originalIndex = originalOrder.indexOf(anchor);
+          svgElement.removeChild(anchor);
+          if (originalIndex >= 0 && originalIndex < svgElement.children.length) {
+            svgElement.insertBefore(anchor, svgElement.children[originalIndex]);
+          } else {
+            svgElement.appendChild(anchor);
           }
-        }, 200); // 少し遅延させて hover 判定できるように
+        }, 100);
       });
 
       group.addEventListener("click", function () {
