@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const prefId = anchor.id;
 
       if (!group) {
-        console.warn(⚠️ <g> not found inside <a id="${prefId}">`);
+        console.warn(`⚠️ <g> not found inside <a id="${prefId}">`);
         return;
       }
 
