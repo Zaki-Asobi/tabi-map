@@ -12,11 +12,9 @@ document.addEventListener("DOMContentLoaded", function () {
     .then(response => response.json())
     .then(data => {
       cityData = data;
-      console.log("✅ cityData loaded:", cityData);
       initializeMap();
     })
     .catch(error => {
-      console.error("❌ 市町村データの読み込みに失敗しました:", error);
       initializeMap();
     });
 
@@ -51,7 +49,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const prefId = anchor.id;
 
       if (!group) {
-        console.warn(`⚠️ <g> not found inside <a id="${prefId}">`);
         return;
       }
 
@@ -68,7 +65,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const bbox = group.getBBox();
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
-        console.log(`📍 ${prefId} bbox center:`, centerX, centerY);
 
         group.style.transformOrigin = `${centerX}px ${centerY}px`;
         svgElement.appendChild(anchor);
@@ -76,7 +72,6 @@ document.addEventListener("DOMContentLoaded", function () {
         applyHoverEffect();
 
         const cities = cityData[prefId];
-        console.log(`🔍 Hovered: ${prefId}`, cities);
 
         let html = `<strong>${prefId}</strong>`;
         if (Array.isArray(cities) && cities.length > 0) {
@@ -91,8 +86,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         popup.innerHTML = html;
         popup.style.display = "block";
-        console.log("📦 popup.innerHTML:", popup.innerHTML);
-        console.log("🎨 popup.style:", popup.style);
 
         activeAnchor = anchor;
       });
@@ -100,7 +93,6 @@ document.addEventListener("DOMContentLoaded", function () {
       group.addEventListener("mousemove", function (e) {
         lastX = e.pageX;
         lastY = e.pageY;
-        console.log("🖱️ Mouse position:", lastX, lastY);
       });
 
       group.addEventListener("mouseleave", function () {
