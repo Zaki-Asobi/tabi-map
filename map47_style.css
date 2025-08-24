@@ -24,9 +24,9 @@ svg#map-layer g path.pref-line {
 	transition: fill 0.3s, stroke 0.3s, stroke-width 0.3s;
 }
 
-/* ホバー時の視覚効果 */
+/* 拡大・色変更維持 */
 .hovering path.pref-line {
-	fill: orange !important;
+	fill: #87c89b !important;
 	stroke: #005c1c !important;
 	stroke-width: 2px !important;
 }
@@ -46,7 +46,7 @@ svg#map-layer text {
 /* ポップアップ */
 #popup {
 	position: absolute;
-	transform: translate(-50%, -120%);
+	transform: translate(-50%, -100%);
 	background: #fff;
 	border: 1px solid #ccc;
 	border-radius: 6px;
