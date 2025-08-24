@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function updatePopupPosition() {
     if (popup.style.display === "block" && !popupLocked) {
       popup.style.left = `${popupX}px`;
-      popup.style.top = `${popupY - 60}px`; // カーソルより上に余裕を持たせる
+      popup.style.top = `${popupY - 60}px`;
     }
     requestAnimationFrame(updatePopupPosition);
   }
@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
         group.classList.add("hovering");
       }
 
-      function removeHoverEffect() {
+      function removeHoverEffect(group) {
         group.style.transform = "scale(1)";
         group.classList.remove("hovering");
       }
@@ -79,15 +79,21 @@ document.addEventListener("DOMContentLoaded", function () {
       group.addEventListener("mouseenter", function (e) {
         isHoveringAnchor = true;
 
-        if (!popupLocked) {
-          popupX = e.pageX;
-          popupY = e.pageY;
-        }
-
+        // 同じ都道府県なら再描画しない
         if (activeAnchor === anchor && popup.style.display === "block") return;
+
+        // 前の都道府県の拡大解除
+        if (activeAnchor && activeAnchor !== anchor) {
+          const prevGroup = activeAnchor.querySelector("g");
+          if (prevGroup) removeHoverEffect(prevGroup);
+        }
 
         activeAnchor = anchor;
         popupLocked = true;
+
+        // 初回のカーソル位置記録（固定表示用）
+        popupX = e.pageX;
+        popupY = e.pageY;
 
         svgElement.appendChild(anchor);
         applyHoverEffect();
