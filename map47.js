@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", function () {
   let cityData = {};
   let isHoveringPopup = false;
   let isHoveringAnchor = false;
-  let popupLocked = false;
 
   fetch("cities.json")
     .then(response => response.json())
@@ -21,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   function updatePopupPosition() {
-    if (popup.style.display === "block" && !popupLocked) {
+    if (popup.style.display === "block") {
       popup.style.left = `${popupX}px`;
       popup.style.top = `${popupY - 60}px`;
     }
@@ -44,7 +43,6 @@ document.addEventListener("DOMContentLoaded", function () {
         popup.style.display = "none";
         removeAllHoverEffects();
         activeAnchor = null;
-        popupLocked = false;
       }
     }, 150);
   }
@@ -76,11 +74,10 @@ document.addEventListener("DOMContentLoaded", function () {
         group.classList.remove("hovering");
       }
 
-      group.addEventListener("mouseenter", function (e) {
-        isHoveringAnchor = true;
+      group.addEventListener("mouseover", function (e) {
+        if (activeAnchor === anchor) return;
 
-        // 同じ都道府県なら再描画しない
-        if (activeAnchor === anchor && popup.style.display === "block") return;
+        isHoveringAnchor = true;
 
         // 前の都道府県の拡大解除
         if (activeAnchor && activeAnchor !== anchor) {
@@ -89,9 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         activeAnchor = anchor;
-        popupLocked = true;
 
-        // 初回のカーソル位置記録（固定表示用）
         popupX = e.pageX;
         popupY = e.pageY;
 
