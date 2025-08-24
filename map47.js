@@ -3,11 +3,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const popup = document.getElementById("popup");
   const originalOrder = Array.from(svgElement.children);
 
-  let lastX = 0, lastY = 0;
+  let popupX = 0, popupY = 0;
   let activeAnchor = null;
   let cityData = {};
   let isHoveringPopup = false;
   let isHoveringAnchor = false;
+  let popupLocked = false;
 
   fetch("cities.json")
     .then(response => response.json())
@@ -20,9 +21,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   function updatePopupPosition() {
-    if (popup.style.display === "block") {
-      popup.style.left = `${lastX}px`;
-      popup.style.top = `${lastY + 20}px`; // カーソルの下に余白
+    if (popup.style.display === "block" && !popupLocked) {
+      popup.style.left = `${popupX}px`;
+      popup.style.top = `${popupY - 40}px`; // カーソルより上に表示
     }
     requestAnimationFrame(updatePopupPosition);
   }
@@ -41,43 +42,52 @@ document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => {
       if (!isHoveringAnchor && !isHoveringPopup) {
         popup.style.display = "none";
+        removeAllHoverEffects();
         activeAnchor = null;
+        popupLocked = false;
       }
     }, 150);
+  }
+
+  function removeAllHoverEffects() {
+    svgElement.querySelectorAll("g.hovering").forEach(g => {
+      g.style.transform = "scale(1)";
+      g.classList.remove("hovering");
+    });
   }
 
   function initializeMap() {
     svgElement.querySelectorAll("a").forEach(function (anchor) {
       const group = anchor.querySelector("g");
       const prefId = anchor.id;
-
       if (!group) return;
 
       function applyHoverEffect() {
-        group.style.transition = "transform 0.2s ease";
+        const bbox = group.getBBox();
+        const centerX = bbox.x + bbox.width / 2;
+        const centerY = bbox.y + bbox.height / 2;
+        group.style.transformOrigin = `${centerX}px ${centerY}px`;
         group.style.transform = "scale(1.05)";
+        group.classList.add("hovering");
       }
 
       function removeHoverEffect() {
         group.style.transform = "scale(1)";
+        group.classList.remove("hovering");
       }
 
       group.addEventListener("mouseenter", function (e) {
         isHoveringAnchor = true;
 
-        // カーソル位置を記録（初回のみ）
-        lastX = e.pageX;
-        lastY = e.pageY;
+        if (!popupLocked) {
+          popupX = e.pageX;
+          popupY = e.pageY;
+        }
 
-        // 同じ都道府県なら再描画しない
         if (activeAnchor === anchor && popup.style.display === "block") return;
 
         activeAnchor = anchor;
-
-        const bbox = group.getBBox();
-        const centerX = bbox.x + bbox.width / 2;
-        const centerY = bbox.y + bbox.height / 2;
-        group.style.transformOrigin = `${centerX}px ${centerY}px`;
+        popupLocked = true;
 
         svgElement.appendChild(anchor);
         applyHoverEffect();
@@ -100,11 +110,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       group.addEventListener("mouseleave", function () {
         isHoveringAnchor = false;
+        checkHidePopup();
 
         setTimeout(() => {
-          checkHidePopup();
-          removeHoverEffect();
-
           const originalIndex = originalOrder.indexOf(anchor);
           svgElement.removeChild(anchor);
           if (originalIndex >= 0 && originalIndex < svgElement.children.length) {
