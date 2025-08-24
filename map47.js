@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let activeAnchor = null;
   let cityData = {};
   let isHoveringPopup = false;
+  let isHoveringAnchor = false;
 
   fetch("cities.json")
     .then(response => response.json())
@@ -33,14 +34,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
   popup.addEventListener("mouseleave", () => {
     isHoveringPopup = false;
-    hidePopupIfNecessary();
+    setTimeout(() => {
+      if (!isHoveringAnchor && !isHoveringPopup) {
+        popup.style.display = "none";
+        activeAnchor = null;
+      }
+    }, 150);
   });
 
   function hidePopupIfNecessary() {
-    if (!isHoveringPopup && !activeAnchor?.matches(":hover")) {
-      popup.style.display = "none";
-      activeAnchor = null;
-    }
+    setTimeout(() => {
+      if (!isHoveringAnchor && !isHoveringPopup) {
+        popup.style.display = "none";
+        activeAnchor = null;
+      }
+    }, 150);
   }
 
   function initializeMap() {
@@ -62,6 +70,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       group.addEventListener("mouseenter", function () {
+        isHoveringAnchor = true;
+
         const bbox = group.getBBox();
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
@@ -96,6 +106,8 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       group.addEventListener("mouseleave", function () {
+        isHoveringAnchor = false;
+
         setTimeout(() => {
           hidePopupIfNecessary();
           removeHoverEffect();
