@@ -21,15 +21,13 @@ svg#map-layer a g {
 
 /* 都道府県の基本スタイル */
 svg#map-layer g path.pref-line {
-  fill: #c9efc8;
-  stroke: #ffffff;
-  stroke-width: 6px; /* ← 境界線を太くして反応範囲を拡張 */
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  transition: fill 0.3s, stroke 0.3s, stroke-width 0.3s;
-  pointer-events: visibleStroke; /* ← 境界線にも反応させる */
+	fill: #c9efc8;
+	stroke: #ffffff;
+	stroke-width: 1px;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+	transition: fill 0.3s, stroke 0.3s, stroke-width 0.3s;
 }
-
 
 /* ホバー時の視覚効果 */
 svg#map-layer a:hover g {
@@ -53,13 +51,11 @@ svg#map-layer .text-size {
 	line-height: 0.9em;
 }
 
-/* テキストはイベント対象外に */
 svg#map-layer a g text {
-  fill: #000001;
-  font-size: 13px;
-  pointer-events: none;
+	fill: #000001;
+	font-size: 13px;
+	pointer-events: none;
 }
-
 
 /* ホバー時のテキスト色変更 */
 svg#map-layer a:hover text {
@@ -82,19 +78,19 @@ svg#map-layer .boundary {
 
 /* ポップアップ */
 #popup {
-  position: absolute;
-  transform: translate(-50%, -120%);
-  background: #ffffff;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 14px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  pointer-events: auto; /* ← ポップアップ内の操作を有効に */
-  z-index: 1000;
-  transition: opacity 0.2s ease;
-  display: none;
-  white-space: nowrap;
+	position: absolute;
+	transform: translate(-50%, -120%);
+	background: #ffffff;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	padding: 8px 12px;
+	font-size: 14px;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+	pointer-events: auto;
+	z-index: 1000;
+	transition: opacity 0.2s ease;
+	display: none;
+	white-space: nowrap;
 }
 
 /* スマホ対応：矢印表示など */
