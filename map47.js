@@ -3,14 +3,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const popup = document.getElementById("popup");
   const originalOrder = Array.from(svgElement.children);
 
-  let lastX = 0, lastY = 0;
   let popupX = 0, popupY = 0;
   let activeAnchor = null;
   let currentPopupHTML = "";
   let cityData = {};
   let isHoveringPopup = false;
   let isHoveringAnchor = false;
-  let isPopupLocked = false;
 
   fetch("cities.json")
     .then(response => response.json())
@@ -46,7 +44,6 @@ document.addEventListener("DOMContentLoaded", function () {
         popup.style.display = "none";
         activeAnchor = null;
         currentPopupHTML = "";
-        isPopupLocked = false;
         removeAllHoverEffects();
       }
     }, 150);
@@ -60,6 +57,10 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!group) return;
 
       function applyHoverEffect() {
+        const bbox = group.getBBox();
+        const centerX = bbox.x + bbox.width / 2;
+        const centerY = bbox.y + bbox.height / 2;
+        group.style.transformOrigin = `${centerX}px ${centerY}px`;
         group.style.transition = "transform 0.2s ease";
         group.style.transform = "scale(1.05)";
         group.classList.add("hovering");
@@ -80,13 +81,8 @@ document.addEventListener("DOMContentLoaded", function () {
       group.addEventListener("mouseenter", function (e) {
         isHoveringAnchor = true;
 
-        // カーソル位置を記録（初回のみ）
-        if (!isPopupLocked) {
-          lastX = e.pageX;
-          lastY = e.pageY;
-          popupX = lastX;
-          popupY = lastY + 20;
-        }
+        popupX = e.pageX;
+        popupY = e.pageY + 20;
 
         const cities = cityData[prefId];
         let html = `<strong>${prefId}</strong>`;
@@ -100,25 +96,19 @@ document.addEventListener("DOMContentLoaded", function () {
           html += "<p>市町村データが見つかりません</p>";
         }
 
-        // 同じ都道府県かつ内容が同じなら再描画しない
-        if (activeAnchor === anchor && popup.style.display === "block" && currentPopupHTML === html) return;
+        // 都道府県が変わったらポップアップ更新
+        if (activeAnchor !== anchor || currentPopupHTML !== html) {
+          removeAllHoverEffects();
+          applyHoverEffect();
 
-        removeAllHoverEffects(); // 他の拡大を解除
-        applyHoverEffect();
+          currentPopupHTML = html;
+          activeAnchor = anchor;
 
-        currentPopupHTML = html;
-        activeAnchor = anchor;
-        isPopupLocked = true;
+          popup.innerHTML = html;
+          popup.style.display = "block";
 
-        popup.innerHTML = html;
-        popup.style.display = "block";
-
-        const bbox = group.getBBox();
-        const centerX = bbox.x + bbox.width / 2;
-        const centerY = bbox.y + bbox.height / 2;
-        group.style.transformOrigin = `${centerX}px ${centerY}px`;
-
-        svgElement.appendChild(anchor);
+          svgElement.appendChild(anchor);
+        }
       });
 
       group.addEventListener("mouseleave", function () {
