@@ -86,7 +86,7 @@ group.addEventListener("mouseenter", function (e) {
   group.style.transformOrigin = `${centerX}px ${centerY}px`;
 
   svgElement.appendChild(anchor);
-  applyHoverEffect();
+  applyHoverEffect(group);
 
   const cities = cityData[prefId];
   let html = `<strong>${prefId}</strong>`;
