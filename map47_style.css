@@ -14,7 +14,7 @@ svg#map-layer {
 /* 各都道府県グループ */
 svg#map-layer a g {
 	display: block;
-	transform-box: view-box; /* Safari互換性向上 */
+	transform-box: view-box;
 	transform-origin: center;
 	transition: transform 0.2s ease;
 }
@@ -61,9 +61,14 @@ svg#map-layer a g text {
 svg#map-layer a:hover text {
 	fill: #005c1c;
 }
+
+/* 拡大中の都道府県枠線維持 */
 .hovering path {
-  fill: orange !important;
+	fill: orange !important;
+	stroke: #005c1c !important;
+	stroke-width: 2px !important;
 }
+
 /* 縦書きキャプション */
 svg#map-layer .caption {
 	font-size: 13px;
@@ -92,7 +97,9 @@ svg#map-layer .boundary {
 	z-index: 1000;
 	transition: opacity 0.2s ease;
 	display: none;
-	white-space: nowrap;
+	white-space: normal;
+	word-break: break-word;
+	max-width: 300px;
 }
 
 /* スマホ対応：矢印表示など */
@@ -107,5 +114,6 @@ svg#map-layer .boundary {
 	#popup {
 		font-size: 12px;
 		padding: 6px 10px;
+		max-width: 90vw;
 	}
 }
