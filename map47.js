@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let lastX = 0, lastY = 0;
   let activeAnchor = null;
+  let currentPopupHTML = "";
   let cityData = {};
   let isHoveringPopup = false;
   let isHoveringAnchor = false;
@@ -42,6 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!isHoveringAnchor && !isHoveringPopup) {
         popup.style.display = "none";
         activeAnchor = null;
+        currentPopupHTML = "";
       }
     }, 150);
   }
@@ -65,22 +67,8 @@ document.addEventListener("DOMContentLoaded", function () {
       group.addEventListener("mouseenter", function (e) {
         isHoveringAnchor = true;
 
-        // カーソル位置を記録（初回のみ）
         lastX = e.pageX;
         lastY = e.pageY;
-
-        // 同じ都道府県なら再描画しない
-        if (activeAnchor === anchor && popup.style.display === "block") return;
-
-        activeAnchor = anchor;
-
-        const bbox = group.getBBox();
-        const centerX = bbox.x + bbox.width / 2;
-        const centerY = bbox.y + bbox.height / 2;
-        group.style.transformOrigin = `${centerX}px ${centerY}px`;
-
-        svgElement.appendChild(anchor);
-        applyHoverEffect();
 
         const cities = cityData[prefId];
         let html = `<strong>${prefId}</strong>`;
@@ -94,8 +82,22 @@ document.addEventListener("DOMContentLoaded", function () {
           html += "<p>市町村データが見つかりません</p>";
         }
 
+        // 同じ都道府県かつ内容が同じなら再描画しない
+        if (activeAnchor === anchor && popup.style.display === "block" && currentPopupHTML === html) return;
+
+        currentPopupHTML = html;
+        activeAnchor = anchor;
+
         popup.innerHTML = html;
         popup.style.display = "block";
+
+        const bbox = group.getBBox();
+        const centerX = bbox.x + bbox.width / 2;
+        const centerY = bbox.y + bbox.height / 2;
+        group.style.transformOrigin = `${centerX}px ${centerY}px`;
+
+        svgElement.appendChild(anchor);
+        applyHoverEffect();
       });
 
       group.addEventListener("mouseleave", function () {
