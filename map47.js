@@ -19,14 +19,14 @@ document.addEventListener("DOMContentLoaded", function () {
       initializeMap();
     });
 
-  function updatePopupPosition() {
-    if (popup.style.display === "block" && activeAnchor) {
-      const bbox = activeAnchor.querySelector("g").getBBox();
-      popup.style.left = `${bbox.x + bbox.width + 10}px`;
-      popup.style.top = `${bbox.y + bbox.height / 2}px`;
-    }
-    requestAnimationFrame(updatePopupPosition);
+function updatePopupPosition() {
+  if (popup.style.display === "block") {
+    popup.style.left = `${lastX}px`;
+    popup.style.top = `${lastY + 30}px`; // 少し下に余白
   }
+  requestAnimationFrame(updatePopupPosition);
+}
+
   updatePopupPosition();
 
   popup.addEventListener("mouseenter", () => {
@@ -67,34 +67,43 @@ document.addEventListener("DOMContentLoaded", function () {
       const prefId = anchor.id;
       if (!group) return;
 
-      group.addEventListener("mouseenter", function (e) {
-        isHoveringAnchor = true;
+group.addEventListener("mouseenter", function (e) {
+  isHoveringAnchor = true;
 
-        if (activeAnchor === anchor && popup.style.display === "block") return;
+  // カーソル位置を記録（都道府県が変わった時のみ）
+  if (activeAnchor !== anchor) {
+    lastX = e.pageX;
+    lastY = e.pageY;
+  }
 
-        activeAnchor = anchor;
+  if (activeAnchor === anchor && popup.style.display === "block") return;
 
-        const bbox = group.getBBox();
-        group.style.transformOrigin = "center center";
+  activeAnchor = anchor;
 
-        svgElement.appendChild(anchor);
-        applyHoverEffect(group);
+  const bbox = group.getBBox();
+  const centerX = bbox.x + bbox.width / 2;
+  const centerY = bbox.y + bbox.height / 2;
+  group.style.transformOrigin = `${centerX}px ${centerY}px`;
 
-        const cities = cityData[prefId];
-        let html = `<strong>${prefId}</strong>`;
-        if (Array.isArray(cities) && cities.length > 0) {
-          html += "<ul>";
-          cities.forEach(city => {
-            html += `<li><a href="${city.url}" target="_blank">${city.name}</a></li>`;
-          });
-          html += "</ul>";
-        } else {
-          html += "<p>市町村データが見つかりません</p>";
-        }
+  svgElement.appendChild(anchor);
+  applyHoverEffect();
 
-        popup.innerHTML = html;
-        popup.style.display = "block";
-      });
+  const cities = cityData[prefId];
+  let html = `<strong>${prefId}</strong>`;
+  if (Array.isArray(cities) && cities.length > 0) {
+    html += "<ul>";
+    cities.forEach(city => {
+      html += `<li><a href="${city.url}" target="_blank">${city.name}</a></li>`;
+    });
+    html += "</ul>";
+  } else {
+    html += "<p>市町村データが見つかりません</p>";
+  }
+
+  popup.innerHTML = html;
+  popup.style.display = "block";
+});
+
 
       group.addEventListener("mouseleave", function () {
         isHoveringAnchor = false;
