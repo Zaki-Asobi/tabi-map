@@ -90,11 +90,6 @@ svg#map-layer .boundary {
 	white-space: nowrap;
 }
 
-/* スマホ対応：矢印表示など（完全非表示） */
-.arrow {
-	display: none !important;
-}
-
 @media screen and (max-width: 500px) {
 	#popup {
 		font-size: 12px;
