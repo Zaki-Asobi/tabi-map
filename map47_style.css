@@ -1,19 +1,20 @@
-@charset "UTF-8";
-/* 2025-08-24 CSS更新テスト */
-/* SVG全体 */
+/* SVG全体のレイアウト */
 svg#map-layer {
 	width: 100%;
+	max-width: 100%;
+	height: auto;
 	padding: 20px 10px;
 	display: block;
 	margin: 0 auto;
 	overflow: visible;
 }
 
-/* 都道府県グループ */
+/* 各都道府県グループ */
 svg#map-layer a g {
+	display: block;
 	transform-box: view-box;
 	transform-origin: center;
-	transition: transform 0.2s ease;
+	transition: transform 0.2s ease, filter 0.2s ease;
 }
 
 /* 都道府県の基本スタイル */
@@ -21,33 +22,58 @@ svg#map-layer g path.pref-line {
 	fill: #c9efc8;
 	stroke: #ffffff;
 	stroke-width: 1px;
+	stroke-linejoin: round;
+	stroke-linecap: round;
 	transition: fill 0.3s, stroke 0.3s, stroke-width 0.3s;
 }
 
-/* 拡大・色変更維持 */
-.hovering path.pref-line {
-	fill: #87c89b !important;
-	stroke: #005c1c !important;
-	stroke-width: 2px !important;
+/* JSで制御するため、hoverによる拡大は削除 */
+svg#map-layer a:hover g path.pref-line {
+	fill: #87c89b;
+	stroke: #005c1c;
+	stroke-width: 2px;
 }
 
-/* テキスト */
-svg#map-layer text {
-	font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+/* テキストスタイル */
+svg#map-layer .text-font,
+svg#map-layer .caption {
+	font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+}
+
+svg#map-layer .text-size {
+	font-size: 13px;
+	line-height: 0.9em;
+}
+
+svg#map-layer a g text {
+	fill: #000001;
 	font-size: 13px;
 	pointer-events: none;
-	fill: #000001;
 }
 
-.hovering text {
-	fill: #005c1c !important;
+/* ホバー時のテキスト色変更 */
+svg#map-layer a:hover text {
+	fill: #005c1c;
+}
+
+/* 縦書きキャプション */
+svg#map-layer .caption {
+	font-size: 13px;
+	writing-mode: vertical-rl;
+	line-height: 1.7em;
+}
+
+/* 境界線 */
+svg#map-layer .boundary {
+	fill: none;
+	stroke: #000000;
+	stroke-width: 0.5;
 }
 
 /* ポップアップ */
 #popup {
 	position: absolute;
-	transform: translate(-50%, -100%);
-	background: #fff;
+	background: #ffffff;
 	border: 1px solid #ccc;
 	border-radius: 6px;
 	padding: 8px 12px;
@@ -55,8 +81,15 @@ svg#map-layer text {
 	box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 	pointer-events: auto;
 	z-index: 1000;
+	transition: opacity 0.2s ease;
 	display: none;
-	white-space: normal;
-	word-break: break-word;
-	max-width: 300px;
+	white-space: nowrap;
+}
+
+/* スマホ対応 */
+@media screen and (max-width: 500px) {
+	#popup {
+		font-size: 12px;
+		padding: 6px 10px;
+	}
 }
