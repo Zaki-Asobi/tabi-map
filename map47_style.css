@@ -61,7 +61,9 @@ svg#map-layer a g text {
 svg#map-layer a:hover text {
 	fill: #005c1c;
 }
-
+.hovering path {
+  fill: orange !important;
+}
 /* 縦書きキャプション */
 svg#map-layer .caption {
 	font-size: 13px;
