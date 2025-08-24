@@ -1,4 +1,3 @@
-<script>
 document.addEventListener("DOMContentLoaded", function () {
   const svgElement = document.querySelector("svg#map-layer");
   const popup = document.getElementById("popup");
@@ -6,21 +5,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let lastX = 0, lastY = 0;
   let activeAnchor = null;
-  let cityData = {}; // 外部JSONを格納する変数
+  let cityData = {};
 
-  //  外部JSON読み込み
   fetch("cities.json")
     .then(response => response.json())
     .then(data => {
       cityData = data;
-      initializeMap(); // 読み込み後に地図イベントを設定
+      initializeMap();
     })
     .catch(error => {
       console.error("市町村データの読み込みに失敗しました:", error);
-      initializeMap(); // データなしでも最低限の挙動は維持
+      initializeMap();
     });
 
-  //  ポップアップ位置を滑らかに更新
   function updatePopup() {
     if (popup.style.display === "block") {
       popup.style.left = `${lastX}px`;
@@ -30,7 +27,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   updatePopup();
 
-  //  地図イベント設定（cityData読み込み後に呼び出す）
   function initializeMap() {
     svgElement.querySelectorAll("a").forEach(function (anchor) {
       const group = anchor.querySelector("g");
@@ -54,15 +50,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         applyHoverEffect();
 
-        //  ポップアップ内容生成（都道府県名＋市町村リンク）
-        let html = `<strong>${prefId}</strong>`;
         const cities = cityData[prefId];
-        if (cities && cities.length > 0) {
+        let html = `<strong>${prefId}</strong>`;
+        if (Array.isArray(cities) && cities.length > 0) {
           html += "<ul>";
           cities.forEach(city => {
             html += `<li><a href="${city.url}" target="_blank">${city.name}</a></li>`;
           });
           html += "</ul>";
+        } else {
+          html += "<p>市町村データが見つかりません</p>";
         }
 
         popup.innerHTML = html;
@@ -76,17 +73,22 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       group.addEventListener("mouseleave", function () {
-        popup.style.display = "none";
-        activeAnchor = null;
-        removeHoverEffect();
+        // ポップアップがマウス上にある場合は消さない
+        setTimeout(() => {
+          if (!popup.matches(":hover")) {
+            popup.style.display = "none";
+            activeAnchor = null;
+            removeHoverEffect();
 
-        const originalIndex = originalOrder.indexOf(anchor);
-        svgElement.removeChild(anchor);
-        if (originalIndex >= 0 && originalIndex < svgElement.children.length) {
-          svgElement.insertBefore(anchor, svgElement.children[originalIndex]);
-        } else {
-          svgElement.appendChild(anchor);
-        }
+            const originalIndex = originalOrder.indexOf(anchor);
+            svgElement.removeChild(anchor);
+            if (originalIndex >= 0 && originalIndex < svgElement.children.length) {
+              svgElement.insertBefore(anchor, svgElement.children[originalIndex]);
+            } else {
+              svgElement.appendChild(anchor);
+            }
+          }
+        }, 200); // 少し遅延させて hover 判定できるように
       });
 
       group.addEventListener("click", function () {
@@ -95,4 +97,3 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
-</script>
