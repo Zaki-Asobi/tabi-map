@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let cityData = {};
   let isHoveringPopup = false;
   let isHoveringAnchor = false;
+  let popupLocked = false;
 
   fetch("cities.json")
     .then(response => response.json())
@@ -44,12 +45,12 @@ document.addEventListener("DOMContentLoaded", function () {
         popup.style.display = "none";
         activeAnchor = null;
         currentPopupHTML = "";
+        popupLocked = false;
         removeAllHoverEffects();
       }
     }, 150);
   }
 
-  // ✅ グローバルに定義（エラー解消）
   function removeAllHoverEffects() {
     svgElement.querySelectorAll("g.hovering").forEach(g => {
       g.style.transform = "scale(1)";
@@ -82,8 +83,10 @@ document.addEventListener("DOMContentLoaded", function () {
       group.addEventListener("mouseenter", function (e) {
         isHoveringAnchor = true;
 
-        popupX = e.pageX;
-        popupY = e.pageY + 20;
+        if (!popupLocked) {
+          popupX = e.pageX;
+          popupY = e.pageY + 20;
+        }
 
         const cities = cityData[prefId];
         let html = `<strong>${prefId}</strong>`;
@@ -97,13 +100,13 @@ document.addEventListener("DOMContentLoaded", function () {
           html += "<p>市町村データが見つかりません</p>";
         }
 
-        // 都道府県が変わったらポップアップ更新
         if (activeAnchor !== anchor || currentPopupHTML !== html) {
           removeAllHoverEffects();
           applyHoverEffect();
 
           currentPopupHTML = html;
           activeAnchor = anchor;
+          popupLocked = true;
 
           popup.innerHTML = html;
           popup.style.display = "block";
@@ -114,6 +117,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
       group.addEventListener("mouseleave", function () {
         isHoveringAnchor = false;
+
+        // ポップアップにカーソルがある間は拡大維持
+        if (!isHoveringPopup) {
+          removeHoverEffect();
+        }
+
         checkHidePopup();
 
         const originalIndex = originalOrder.indexOf(anchor);
