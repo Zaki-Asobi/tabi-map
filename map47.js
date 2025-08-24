@@ -3,13 +3,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const popup = document.getElementById("popup");
   const originalOrder = Array.from(svgElement.children);
 
-  let popupX = 0, popupY = 0;
+  let lastX = 0, lastY = 0;
   let activeAnchor = null;
-  let currentPopupHTML = "";
   let cityData = {};
   let isHoveringPopup = false;
   let isHoveringAnchor = false;
-  let popupLocked = false;
 
   fetch("cities.json")
     .then(response => response.json())
@@ -23,8 +21,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function updatePopupPosition() {
     if (popup.style.display === "block") {
-      popup.style.left = `${popupX}px`;
-      popup.style.top = `${popupY}px`;
+      popup.style.left = `${lastX}px`;
+      popup.style.top = `${lastY + 20}px`; // カーソルの下に余白
     }
     requestAnimationFrame(updatePopupPosition);
   }
@@ -44,18 +42,8 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!isHoveringAnchor && !isHoveringPopup) {
         popup.style.display = "none";
         activeAnchor = null;
-        currentPopupHTML = "";
-        popupLocked = false;
-        removeAllHoverEffects();
       }
     }, 150);
-  }
-
-  function removeAllHoverEffects() {
-    svgElement.querySelectorAll("g.hovering").forEach(g => {
-      g.style.transform = "scale(1)";
-      g.classList.remove("hovering");
-    });
   }
 
   function initializeMap() {
@@ -66,27 +54,33 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!group) return;
 
       function applyHoverEffect() {
-        const bbox = group.getBBox();
-        const centerX = bbox.x + bbox.width / 2;
-        const centerY = bbox.y + bbox.height / 2;
-        group.style.transformOrigin = `${centerX}px ${centerY}px`;
         group.style.transition = "transform 0.2s ease";
         group.style.transform = "scale(1.05)";
-        group.classList.add("hovering");
       }
 
       function removeHoverEffect() {
         group.style.transform = "scale(1)";
-        group.classList.remove("hovering");
       }
 
       group.addEventListener("mouseenter", function (e) {
         isHoveringAnchor = true;
 
-        if (!popupLocked) {
-          popupX = e.pageX;
-          popupY = e.pageY + 20;
-        }
+        // カーソル位置を記録（初回のみ）
+        lastX = e.pageX;
+        lastY = e.pageY;
+
+        // 同じ都道府県なら再描画しない
+        if (activeAnchor === anchor && popup.style.display === "block") return;
+
+        activeAnchor = anchor;
+
+        const bbox = group.getBBox();
+        const centerX = bbox.x + bbox.width / 2;
+        const centerY = bbox.y + bbox.height / 2;
+        group.style.transformOrigin = `${centerX}px ${centerY}px`;
+
+        svgElement.appendChild(anchor);
+        applyHoverEffect();
 
         const cities = cityData[prefId];
         let html = `<strong>${prefId}</strong>`;
@@ -100,38 +94,25 @@ document.addEventListener("DOMContentLoaded", function () {
           html += "<p>市町村データが見つかりません</p>";
         }
 
-        if (activeAnchor !== anchor || currentPopupHTML !== html) {
-          removeAllHoverEffects();
-          applyHoverEffect();
-
-          currentPopupHTML = html;
-          activeAnchor = anchor;
-          popupLocked = true;
-
-          popup.innerHTML = html;
-          popup.style.display = "block";
-
-          svgElement.appendChild(anchor);
-        }
+        popup.innerHTML = html;
+        popup.style.display = "block";
       });
 
       group.addEventListener("mouseleave", function () {
         isHoveringAnchor = false;
 
-        // ポップアップにカーソルがある間は拡大維持
-        if (!isHoveringPopup) {
+        setTimeout(() => {
+          checkHidePopup();
           removeHoverEffect();
-        }
 
-        checkHidePopup();
-
-        const originalIndex = originalOrder.indexOf(anchor);
-        svgElement.removeChild(anchor);
-        if (originalIndex >= 0 && originalIndex < svgElement.children.length) {
-          svgElement.insertBefore(anchor, svgElement.children[originalIndex]);
-        } else {
-          svgElement.appendChild(anchor);
-        }
+          const originalIndex = originalOrder.indexOf(anchor);
+          svgElement.removeChild(anchor);
+          if (originalIndex >= 0 && originalIndex < svgElement.children.length) {
+            svgElement.insertBefore(anchor, svgElement.children[originalIndex]);
+          } else {
+            svgElement.appendChild(anchor);
+          }
+        }, 100);
       });
 
       group.addEventListener("click", function () {
