@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function updatePopupPosition() {
     if (popup.style.display === "block" && !popupLocked) {
       popup.style.left = `${popupX}px`;
-      popup.style.top = `${popupY - 40}px`; // カーソルより上に表示
+      popup.style.top = `${popupY - 60}px`; // カーソルより上に余裕を持たせる
     }
     requestAnimationFrame(updatePopupPosition);
   }
