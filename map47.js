@@ -49,6 +49,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 150);
   }
 
+  // ✅ グローバルに定義（エラー解消）
+  function removeAllHoverEffects() {
+    svgElement.querySelectorAll("g.hovering").forEach(g => {
+      g.style.transform = "scale(1)";
+      g.classList.remove("hovering");
+    });
+  }
+
   function initializeMap() {
     svgElement.querySelectorAll("a").forEach(function (anchor) {
       const group = anchor.querySelector("g");
@@ -69,13 +77,6 @@ document.addEventListener("DOMContentLoaded", function () {
       function removeHoverEffect() {
         group.style.transform = "scale(1)";
         group.classList.remove("hovering");
-      }
-
-      function removeAllHoverEffects() {
-        svgElement.querySelectorAll("g.hovering").forEach(g => {
-          g.style.transform = "scale(1)";
-          g.classList.remove("hovering");
-        });
       }
 
       group.addEventListener("mouseenter", function (e) {
