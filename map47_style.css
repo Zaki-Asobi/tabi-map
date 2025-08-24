@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 /* SVG全体のレイアウト */
 svg#map-layer {
 	width: 100%;
@@ -12,9 +14,9 @@ svg#map-layer {
 /* 各都道府県グループ */
 svg#map-layer a g {
 	display: block;
-	transform-box: view-box;
+	transform-box: view-box; /* Safari互換性向上 */
 	transform-origin: center;
-	transition: transform 0.2s ease, filter 0.2s ease;
+	transition: transform 0.2s ease;
 }
 
 /* 都道府県の基本スタイル */
@@ -27,7 +29,11 @@ svg#map-layer g path.pref-line {
 	transition: fill 0.3s, stroke 0.3s, stroke-width 0.3s;
 }
 
-/* JSで制御するため、hoverによる拡大は削除 */
+/* ホバー時の視覚効果 */
+svg#map-layer a:hover g {
+	transform: scale(1.05);
+}
+
 svg#map-layer a:hover g path.pref-line {
 	fill: #87c89b;
 	stroke: #005c1c;
@@ -72,22 +78,34 @@ svg#map-layer .boundary {
 
 /* ポップアップ */
 #popup {
-	position: absolute;
-	background: #ffffff;
-	border: 1px solid #ccc;
-	border-radius: 6px;
-	padding: 8px 12px;
-	font-size: 14px;
-	box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-	pointer-events: auto;
-	z-index: 1000;
-	transition: opacity 0.2s ease;
-	display: none;
-	white-space: nowrap;
+  position: absolute;
+  transform: translate(-50%, -150%); /* 少し離す */
+  top: 0;
+  left: 0;
+  background: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  pointer-events: auto;
+  z-index: 1000;
+  transition: opacity 0.2s ease;
+  display: none;
+  white-space: nowrap;
 }
 
-/* スマホ対応 */
+/* スマホ対応：矢印表示など */
+.arrow {
+	display: none;
+}
+body, html {
+  overflow: visible; /* SVGが見切れないように */
+}
 @media screen and (max-width: 500px) {
+	.arrow {
+		display: inline-block !important;
+	}
 	#popup {
 		font-size: 12px;
 		padding: 6px 10px;
