@@ -62,41 +62,44 @@ document.addEventListener("DOMContentLoaded", function () {
         group.style.transform = "scale(1)";
       }
 
-      group.addEventListener("mouseenter", function (e) {
-        isHoveringAnchor = true;
+group.addEventListener("mouseenter", function (e) {
+  isHoveringAnchor = true;
 
-        // カーソル位置を記録（初回のみ）
-        lastX = e.pageX;
-        lastY = e.pageY;
+  // カーソル位置を記録（初回のみ）
+  lastX = e.pageX;
+  lastY = e.pageY;
 
-        // 同じ都道府県なら再描画しない
-        if (activeAnchor === anchor && popup.style.display === "block") return;
+  // 同じ都道府県でポップアップが表示中なら再描画しない
+  if (activeAnchor === anchor && popup.style.display === "block") return;
 
-        activeAnchor = anchor;
+  activeAnchor = anchor;
 
-        const bbox = group.getBBox();
-        const centerX = bbox.x + bbox.width / 2;
-        const centerY = bbox.y + bbox.height / 2;
-        group.style.transformOrigin = `${centerX}px ${centerY}px`;
+  const bbox = group.getBBox();
+  const centerX = bbox.x + bbox.width / 2;
+  const centerY = bbox.y + bbox.height / 2;
+  group.style.transformOrigin = `${centerX}px ${centerY}px`;
 
-        svgElement.appendChild(anchor);
-        applyHoverEffect();
+  applyHoverEffect();
 
-        const cities = cityData[prefId];
-        let html = `<strong>${prefId}</strong>`;
-        if (Array.isArray(cities) && cities.length > 0) {
-          html += "<ul>";
-          cities.forEach(city => {
-            html += `<li><a href="${city.url}" target="_blank">${city.name}</a></li>`;
-          });
-          html += "</ul>";
-        } else {
-          html += "<p>市町村データが見つかりません</p>";
-        }
+  const cities = cityData[prefId];
+  let html = `<strong>${prefId}</strong>`;
+  if (Array.isArray(cities) && cities.length > 0) {
+    html += "<ul>";
+    cities.forEach(city => {
+      html += `<li><a href="${city.url}" target="_blank">${city.name}</a></li>`;
+    });
+    html += "</ul>";
+  } else {
+    html += "<p>市町村データが見つかりません</p>";
+  }
 
-        popup.innerHTML = html;
-        popup.style.display = "block";
-      });
+  // ポップアップ内容が同じなら再描画しない
+  if (popup.innerHTML === html && popup.style.display === "block") return;
+
+  popup.innerHTML = html;
+  popup.style.display = "block";
+});
+
 
       group.addEventListener("mouseleave", function () {
         isHoveringAnchor = false;
