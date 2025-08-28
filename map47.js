@@ -5,120 +5,67 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let lastX = 0, lastY = 0;
   let activeAnchor = null;
-  let cityData = {};
-  let isHoveringPopup = false;
-  let isHoveringAnchor = false;
 
-  fetch("cities.json")
-    .then(response => response.json())
-    .then(data => {
-      cityData = data;
-      initializeMap();
-    })
-    .catch(() => {
-      initializeMap();
-    });
-  
-  // 修正
-  function updatePopupPosition() {
+  // ポップアップ位置を滑らかに更新
+  function updatePopup() {
     if (popup.style.display === "block") {
       popup.style.left = `${lastX}px`;
-      popup.style.top = `${lastY + 20}px`; // カーソルの下に余白
+      popup.style.top = `${lastY}px`;
     }
-    requestAnimationFrame(updatePopupPosition);
+    requestAnimationFrame(updatePopup);
   }
-  updatePopupPosition();
+  updatePopup();
 
-  popup.addEventListener("mouseenter", () => {
-    isHoveringPopup = true;
-  });
+  svgElement.querySelectorAll("a").forEach(function (anchor) {
+    const group = anchor.querySelector("g");
+    const prefId = anchor.id;
 
-  popup.addEventListener("mouseleave", () => {
-    isHoveringPopup = false;
-    checkHidePopup();
-  });
+    // 視覚効果：拡大と色変更（CSSで補完）
+    function applyHoverEffect() {
+      group.style.transition = "transform 0.2s ease";
+      group.style.transform = "scale(1.05)";
+    }
 
-  function checkHidePopup() {
-    setTimeout(() => {
-      if (!isHoveringAnchor && !isHoveringPopup) {
-        popup.style.display = "none";
-        activeAnchor = null;
-      }
-    }, 150);
-  }
+    function removeHoverEffect() {
+      group.style.transform = "scale(1)";
+    }
 
-  function initializeMap() {
-    svgElement.querySelectorAll("a").forEach(function (anchor) {
-      const group = anchor.querySelector("g");
-      const prefId = anchor.id;
+    group.addEventListener("mouseenter", function () {
+      const bbox = group.getBBox();
+      const centerX = bbox.x + bbox.width / 2;
+      const centerY = bbox.y + bbox.height / 2;
+      group.style.transformOrigin = `${centerX}px ${centerY}px`;
+      svgElement.appendChild(anchor);
 
-      if (!group) return;
+      applyHoverEffect();
 
-      function applyHoverEffect() {
-        group.style.transition = "transform 0.2s ease";
-        group.style.transform = "scale(1.05)";
-      }
-
-      function removeHoverEffect() {
-        group.style.transform = "scale(1)";
-      }
-
-      group.addEventListener("mouseenter", function (e) {
-        isHoveringAnchor = true;
-
-        // カーソル位置を記録（初回のみ）
-        lastX = e.pageX;
-        lastY = e.pageY;
-
-        // 同じ都道府県なら再描画しない
-        if (activeAnchor === anchor && popup.style.display === "block") return;
-
-        activeAnchor = anchor;
-
-        const bbox = group.getBBox();
-        const centerX = bbox.x + bbox.width / 2;
-        const centerY = bbox.y + bbox.height / 2;
-        group.style.transformOrigin = `${centerX}px ${centerY}px`;
-
-        svgElement.appendChild(anchor);
-        applyHoverEffect();
-
-        const cities = cityData[prefId];
-        let html = `<strong>${prefId}</strong>`;
-        if (Array.isArray(cities) && cities.length > 0) {
-          html += "<ul>";
-          cities.forEach(city => {
-            html += `<li><a href="${city.url}" target="_blank">${city.name}</a></li>`;
-          });
-          html += "</ul>";
-        } else {
-          html += "<p>市町村データが見つかりません</p>";
-        }
-
-        popup.innerHTML = html;
-        popup.style.display = "block";
-      });
-
-      group.addEventListener("mouseleave", function () {
-        isHoveringAnchor = false;
-
-        setTimeout(() => {
-          checkHidePopup();
-          removeHoverEffect();
-
-          const originalIndex = originalOrder.indexOf(anchor);
-          svgElement.removeChild(anchor);
-          if (originalIndex >= 0 && originalIndex < svgElement.children.length) {
-            svgElement.insertBefore(anchor, svgElement.children[originalIndex]);
-          } else {
-            svgElement.appendChild(anchor);
-          }
-        }, 100);
-      });
-
-      group.addEventListener("click", function () {
-        window.location.href = `${prefId}.html`;
-      });
+      // ポップアップ内容（今は都道府県名のみ）
+      popup.innerHTML = `<strong>${prefId}</strong>`;
+      popup.style.display = "block";
+      activeAnchor = anchor;
     });
-  }
+
+    group.addEventListener("mousemove", function (e) {
+      lastX = e.pageX;
+      lastY = e.pageY;
+    });
+
+    group.addEventListener("mouseleave", function () {
+      popup.style.display = "none";
+      activeAnchor = null;
+      removeHoverEffect();
+
+      const originalIndex = originalOrder.indexOf(anchor);
+      svgElement.removeChild(anchor);
+      if (originalIndex >= 0 && originalIndex < svgElement.children.length) {
+        svgElement.insertBefore(anchor, svgElement.children[originalIndex]);
+      } else {
+        svgElement.appendChild(anchor);
+      }
+    });
+
+    group.addEventListener("click", function () {
+      window.location.href = `${prefId}.html`;
+    });
+  });
 });
