@@ -18,7 +18,8 @@ document.addEventListener("DOMContentLoaded", function () {
     .catch(() => {
       initializeMap();
     });
-
+  
+  // 修正
   function updatePopupPosition() {
     if (popup.style.display === "block") {
       popup.style.left = `${lastX}px`;
