@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const popup = document.getElementById("popup");
   let activeAnchor = null;
   let hideTimeout = null;
-
+//こめんと
   function showPopup(anchor, group) {
     const bbox = group.getBBox();
     const svgRect = svgElement.getBoundingClientRect();
