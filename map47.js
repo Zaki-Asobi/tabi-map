@@ -1,70 +1,123 @@
 document.addEventListener("DOMContentLoaded", function () {
   const svgElement = document.querySelector("svg#map-layer");
   const popup = document.getElementById("popup");
+  const originalOrder = Array.from(svgElement.children);
+
+  let lastX = 0, lastY = 0;
   let activeAnchor = null;
-  let hideTimeout = null;
-//こめんと
-  function showPopup(anchor, group) {
-    const bbox = group.getBBox();
-    const svgRect = svgElement.getBoundingClientRect();
+  let cityData = {};
+  let isHoveringPopup = false;
+  let isHoveringAnchor = false;
 
-    const pageX = svgRect.left + bbox.x + bbox.width * 0.8;
-    const pageY = svgRect.top + bbox.y - bbox.height * 0.3;
+  fetch("cities.json")
+    .then(response => response.json())
+    .then(data => {
+      cityData = data;
+      initializeMap();
+    })
+    .catch(() => {
+      initializeMap();
+    });
 
-    popup.innerHTML = `<strong>${anchor.id}</strong>`;
-    popup.style.left = `${pageX}px`;
-    popup.style.top = `${pageY}px`;
-    popup.style.display = "block";
-
-    activeAnchor = anchor;
-
-    group.style.transition = "transform 0.2s ease";
-    group.style.transform = "scale(1.05)";
-    const path = group.querySelector("path.pref-line");
-    if (path) {
-      path.style.fill = "#87c89b";
-      path.style.stroke = "#005c1c";
-      path.style.strokeWidth = "2px";
+  function updatePopupPosition() {
+    if (popup.style.display === "block") {
+      popup.style.left = `${lastX}px`;
+      popup.style.top = `${lastY + 20}px`; // カーソルの下に余白
     }
+    requestAnimationFrame(updatePopupPosition);
   }
-
-  function hidePopup() {
-    if (activeAnchor) {
-      const group = activeAnchor.querySelector("g");
-      group.style.transform = "scale(1)";
-      const path = group.querySelector("path.pref-line");
-      if (path) {
-        path.style.fill = "#c9efc8";
-        path.style.stroke = "#ffffff";
-        path.style.strokeWidth = "1px";
-      }
-    }
-    popup.style.display = "none";
-    activeAnchor = null;
-  }
-
-  svgElement.querySelectorAll("a").forEach(function (anchor) {
-    const group = anchor.querySelector("g");
-
-    group.addEventListener("mouseenter", () => {
-      clearTimeout(hideTimeout);
-      showPopup(anchor, group);
-    });
-
-    group.addEventListener("mouseleave", () => {
-      hideTimeout = setTimeout(hidePopup, 300);
-    });
-
-    group.addEventListener("click", () => {
-      window.location.href = `${anchor.id}.html`;
-    });
-  });
+  updatePopupPosition();
 
   popup.addEventListener("mouseenter", () => {
-    clearTimeout(hideTimeout);
+    isHoveringPopup = true;
   });
 
   popup.addEventListener("mouseleave", () => {
-    hideTimeout = setTimeout(hidePopup, 300);
+    isHoveringPopup = false;
+    checkHidePopup();
   });
+
+  function checkHidePopup() {
+    setTimeout(() => {
+      if (!isHoveringAnchor && !isHoveringPopup) {
+        popup.style.display = "none";
+        activeAnchor = null;
+      }
+    }, 150);
+  }
+
+  function initializeMap() {
+    svgElement.querySelectorAll("a").forEach(function (anchor) {
+      const group = anchor.querySelector("g");
+      const prefId = anchor.id;
+
+      if (!group) return;
+
+      function applyHoverEffect() {
+        group.style.transition = "transform 0.2s ease";
+        group.style.transform = "scale(1.05)";
+      }
+
+      function removeHoverEffect() {
+        group.style.transform = "scale(1)";
+      }
+
+      group.addEventListener("mouseenter", function (e) {
+        isHoveringAnchor = true;
+
+        // カーソル位置を記録（初回のみ）
+        lastX = e.pageX;
+        lastY = e.pageY;
+
+        // 同じ都道府県なら再描画しない
+        if (activeAnchor === anchor && popup.style.display === "block") return;
+
+        activeAnchor = anchor;
+
+        const bbox = group.getBBox();
+        const centerX = bbox.x + bbox.width / 2;
+        const centerY = bbox.y + bbox.height / 2;
+        group.style.transformOrigin = `${centerX}px ${centerY}px`;
+
+        svgElement.appendChild(anchor);
+        applyHoverEffect();
+
+        const cities = cityData[prefId];
+        let html = `<strong>${prefId}</strong>`;
+        if (Array.isArray(cities) && cities.length > 0) {
+          html += "<ul>";
+          cities.forEach(city => {
+            html += `<li><a href="${city.url}" target="_blank">${city.name}</a></li>`;
+          });
+          html += "</ul>";
+        } else {
+          html += "<p>市町村データが見つかりません</p>";
+        }
+
+        popup.innerHTML = html;
+        popup.style.display = "block";
+      });
+
+      group.addEventListener("mouseleave", function () {
+        isHoveringAnchor = false;
+
+        setTimeout(() => {
+          checkHidePopup();
+          removeHoverEffect();
+
+          const originalIndex = originalOrder.indexOf(anchor);
+          svgElement.removeChild(anchor);
+          if (originalIndex >= 0 && originalIndex < svgElement.children.length) {
+            svgElement.insertBefore(anchor, svgElement.children[originalIndex]);
+          } else {
+            svgElement.appendChild(anchor);
+          }
+        }, 100);
+      });
+
+      group.addEventListener("click", function () {
+        window.location.href = `${prefId}.html`;
+      });
+    });
+  }
 });
