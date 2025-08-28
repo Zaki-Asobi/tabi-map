@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function updatePopupPosition() {
     if (popup.style.display === "block") {
       popup.style.left = `${lastX}px`;
-      popup.style.top = `${lastY + 20}px`; // カーソルの下に余白
+      popup.style.top = `${lastY + 20}px`; // カーソルの下に余白を
     }
     requestAnimationFrame(updatePopupPosition);
   }
