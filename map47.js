@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const svgElement = document.querySelector("svg#map-layer");
   const popup = document.getElementById("popup");
-  const originalOrder = Array.from(svgElement.children);
   let activeAnchor = null;
   let hideTimeout = null;
 
@@ -10,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const svgRect = svgElement.getBoundingClientRect();
 
     const pageX = svgRect.left + bbox.x + bbox.width * 0.8;
-    const pageY = svgRect.top + bbox.y - bbox.height * 0.2;
+    const pageY = svgRect.top + bbox.y - bbox.height * 0.3;
 
     popup.innerHTML = `<strong>${anchor.id}</strong>`;
     popup.style.left = `${pageX}px`;
@@ -39,16 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
         path.style.stroke = "#ffffff";
         path.style.strokeWidth = "1px";
       }
-
-      const originalIndex = originalOrder.indexOf(activeAnchor);
-      svgElement.removeChild(activeAnchor);
-      if (originalIndex >= 0 && originalIndex < svgElement.children.length) {
-        svgElement.insertBefore(activeAnchor, svgElement.children[originalIndex]);
-      } else {
-        svgElement.appendChild(activeAnchor);
-      }
     }
-
     popup.style.display = "none";
     activeAnchor = null;
   }
@@ -58,11 +48,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     group.addEventListener("mouseenter", () => {
       clearTimeout(hideTimeout);
-      const bbox = group.getBBox();
-      const centerX = bbox.x + bbox.width / 2;
-      const centerY = bbox.y + bbox.height / 2;
-      group.style.transformOrigin = `${centerX}px ${centerY}px`;
-      svgElement.appendChild(anchor); // bring to front
       showPopup(anchor, group);
     });
 
