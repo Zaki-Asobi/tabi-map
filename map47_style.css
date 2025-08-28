@@ -79,14 +79,14 @@ svg#map-layer .boundary {
 /* ポップアップ */
 #popup {
 	position: absolute;
-	transform: translate(-50%, -100%);
+	transform: translate(-50%, -120%);
 	background: #ffffff;
 	border: 1px solid #ccc;
 	border-radius: 6px;
 	padding: 8px 12px;
 	font-size: 14px;
 	box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-	pointer-events: auto; /* ← ここが変更点 */
+	pointer-events: auto;
 	z-index: 1000;
 	transition: opacity 0.2s ease;
 	display: none;
